@@ -239,18 +239,45 @@ func preprocess(raw string) (string, []int) {
 	color := []int{0,0,0,0}
 	for i:=0;i<len(raw);i+=2 {
 		str += string(raw[i])
-		se := colorTable[string(raw[i+1])]
+		se := colorTable[(raw[i+1])]
 		color[se]++
 	}
 	return str, color
 }
 
-var table map[string]int = map[string]int {
-	"2":2, "3":3, "4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"T":10,"J":11, "Q":12,"K":13,"A":14,
-}
+//var table map[string]int = map[string]int {
+//	"2":2, "3":3, "4":4,"5":5,"6":6,"7":7,"8":8,"9":9,"T":10,"J":11, "Q":12,"K":13,"A":14,
+//}
 
 var invTable map[int]string = map[int]string {
 	2:"2", 3:"3", 4:"4", 5:"5",6:"6", 7:"7", 8:"8", 9:"9", 10:"T", 11:"J", 12:"Q", 13:"K", 14:"A",
+}
+
+var table [128]int
+
+func init() {
+	table['2'] = 2
+	table['3'] = 3
+	table['4'] = 4
+	table['5'] = 5
+	table['6'] = 6
+	table['7'] = 7
+	table['8'] = 8
+	table['9'] = 9
+	table['T'] = 10
+	table['J'] = 11
+	table['Q'] = 12
+	table['K'] = 13
+	table['A'] = 14
+
+	colorTable['C'] = clubs
+	colorTable['H'] = hearts
+	colorTable['D'] = diamonds
+	colorTable['S'] = spades
+	colorTable['c'] = clubs
+	colorTable['h'] = hearts
+	colorTable['s'] = spades
+	colorTable['d'] = diamonds
 }
 
 const (
@@ -363,7 +390,7 @@ func process(cards string) *cardSort {
 	}
 
 	var buck map[int][]int
-	good[0] = table[string(cards[0])]
+	good[0] = table[(cards[0])]
 	lastColor := string(cards[1])
 	isSame := same
 	kind := alone
@@ -374,7 +401,7 @@ func process(cards string) *cardSort {
 		//	ghost = true
 		//	continue
 		//}
-		good[i>>1] = table[string(cards[i])]
+		good[i>>1] = table[(cards[i])]
 		kind = sort(good, i>>1, kind)
 		if lastColor != string(cards[i+1]) {
 			// color same?
@@ -398,7 +425,7 @@ func process(cards string) *cardSort {
 		}
 		if i == (length>>1)-1 {
 			if isSame == same {
-				if good[0] == table["A"] && good[1] == table["K"] {
+				if good[0] == table['A'] && good[1] == table['K'] {
 					kind = royal
 				} else {
 					kind = flush
@@ -584,7 +611,7 @@ func compare(a, b *cardSort) int {
 		return less
 	} else {
 		if a.kind == flush || a.kind == sequence {
-			if (a.good[0] > b.good[0] && a.good[0] != table["A"]) || (a.good[0] != table["A"] && b.good[0] == table["A"]) {
+			if (a.good[0] > b.good[0] && a.good[0] != table['A']) || (a.good[0] != table['A'] && b.good[0] == table['A']) {
 				return over
 			} else if a.good[0] < b.good[0] {
 				return less
@@ -747,7 +774,8 @@ const (
 	clubs
 )
 
-var colorTable map[string]int = map[string]int{"S":spades, "H":hearts, "D":diamonds, "C":clubs, "s":spades, "h":hearts, "d":diamonds, "c":clubs}
+//var colorTable map[string]int = map[string]int{"S":spades, "H":hearts, "D":diamonds, "C":clubs, "s":spades, "h":hearts, "d":diamonds, "c":clubs}
+var colorTable [128]int
 
 type cardColor struct {
 	count int
@@ -941,7 +969,7 @@ func create32Table(result map[string]seqCards) {
 	//fmt.Println(raw)
 	for _, item := range raw {
 		material := []string{string(item[0]),string(item[0]),string(item[0]),string(item[1]),string(item[1])}
-		kind := seqCards{threeTwo, []int{table[string(item[0])], table[string(item[1])]}}
+		kind := seqCards{threeTwo, []int{table[(item[0])], table[(item[1])]}}
 
 		possible := []string{}
 		permutate(material, 0, 5, &possible)
@@ -957,7 +985,7 @@ func create4Table(result map[string]seqCards) {
 	//fmt.Println(raw)
 	for _, item := range raw {
 		material := []string{string(item[0]),string(item[0]),string(item[0]),string(item[0]),string(item[1])}
-		kind := seqCards{four, []int{table[string(item[0])], table[string(item[1])]}}
+		kind := seqCards{four, []int{table[(item[0])], table[(item[1])]}}
 
 		possible := []string{}
 		permutate(material, 0, 5, &possible)
@@ -973,11 +1001,11 @@ func create3Table(result map[string]seqCards) {
 	//fmt.Println(raw)
 	for _, item := range raw {
 		material := []string{string(item[0]),string(item[0]),string(item[0]),string(item[1]),string(item[2])}
-		max, min := table[string(item[1])], table[string(item[2])]
+		max, min := table[(item[1])], table[(item[2])]
 		if max < min {
 			max, min = min, max
 		}
-		kind := seqCards{three, []int{table[string(item[0])], max, min}}
+		kind := seqCards{three, []int{table[(item[0])], max, min}}
 
 		possible := []string{}
 		permutate(material, 0, 5, &possible)
@@ -993,11 +1021,11 @@ func createCouple2Table(result map[string]seqCards) {
 	//fmt.Println(raw)
 	for _, item := range raw {
 		material := []string{string(item[0]),string(item[0]),string(item[1]),string(item[1]),string(item[2])}
-		max, min := table[string(item[0])], table[string(item[1])]
+		max, min := table[(item[0])], table[(item[1])]
 		if max < min {
 			max, min = min, max
 		}
-		kind := seqCards{couple2, []int{max, min, table[string(item[2])]}}
+		kind := seqCards{couple2, []int{max, min, table[(item[2])]}}
 
 		possible := []string{}
 		permutate(material, 0, 5, &possible)
@@ -1013,9 +1041,9 @@ func createCoupleTable(result map[string]seqCards) {
 	//fmt.Println(raw)
 	for _, item := range raw {
 		material := []string{string(item[0]),string(item[0]),string(item[1]),string(item[2]),string(item[3])}
-		seq := []int{table[string(item[1])], table[string(item[2])], table[string(item[3])]}
+		seq := []int{table[(item[1])], table[(item[2])], table[(item[3])]}
 		sortCard(seq, 3)
-		sorted := []int{table[string(item[0])]}
+		sorted := []int{table[(item[0])]}
 		kind := seqCards{couple, append(sorted, seq...)}
 
 		possible := []string{}
@@ -1031,7 +1059,7 @@ func createFullTableWithoutGhost() map[string]seqCards {
 	smallTab := createSequenceTableWithoutGhost()
 
 	for k, v := range smallTab {
-		max := table[string(k[0])]
+		max := table[(k[0])]
 		if k=="A5432" {
 			max = 5
 		}
@@ -1045,13 +1073,13 @@ func createFullTableWithGhost() map[string]seqCards {
 	smallTab := createSequenceTableWithGhost()
 	for k, v := range smallTab {
 		alphabets := divideStr(k)
-		max := table[string(k[0])]
+		max := table[(k[0])]
 		if stringContainedInSlice(k, []string{"A543", "A432", "A532", "A542"}) {
 			max = 5
 		} else {
-			if table[alphabets[0]]==table[alphabets[1]]+1 && table[alphabets[1]]==table[alphabets[2]]+1 && table[alphabets[2]]==table[alphabets[3]]+1 {
+			if table[alphabets[0][0]]==table[alphabets[1][0]]+1 && table[alphabets[1][0]]==table[alphabets[2][0]]+1 && table[alphabets[2][0]]==table[alphabets[3][0]]+1 {
 				//顺序的数列，赖子做首数
-				max = table[alphabets[0]]+1
+				max = table[alphabets[0][0]]+1
 			}
 		}
 		createCardsTable(4, ret, alphabets, "", []int{max}, v)
@@ -1111,8 +1139,8 @@ func (cb *cardBuf) addCard(cards string, length int) bool {
 			ghost = true
 			continue
 		}
-		card := table[string(cards[i])]
-		se := colorTable[string(cards[i+1])]
+		card := table[(cards[i])]
+		se := colorTable[(cards[i+1])]
 		// 记录颜色
 		//cb.color[card] |= 1<<uint(se)
 		//cb.color[se] |= (1<<uint(card))
@@ -1789,7 +1817,7 @@ func (cb *SimpleCards) add5Card(cards string, se []int) {
 		cb.cards = v
 	} else {
 		for i:=0; i<5; i++ {
-			card := table[string(cards[i])]
+			card := table[(cards[i])]
 			cb.buf[i]=card
 		}
 		sortCard(cb.buf, 5)
